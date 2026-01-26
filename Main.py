@@ -219,7 +219,7 @@ for i in range(random.randrange(1, 3)):
     Platforms.append(Moving_Platform(random.randrange(50, 500), random.randrange(50, 700), "Dynamic:Simple"))
 
 while Running == True:
-    
+    Clock.tick(60)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             Running = False
