@@ -9,9 +9,10 @@ Running = True
 class Player():
     def __init__(self):
         self.X_Pos = 400
-        self.Y_Pos = 700
+        self.Y_Pos = 600
         self.X_Vol = 0
         self.Y_Vol = 0
+        self.OnGround = True
         self.Movement_Input = [False, False, False] # Left, Right, Up
     
     def Input(self, Key1, Key2, Key3):
@@ -31,13 +32,44 @@ class Player():
                 self.Movement_Input[2] = False
 
     def Physics(self):
-        if self.Movement_Input[0] == True:
+        if (self.Movement_Input[0] == True) and (self.OnGround == True) and (self.X_Vol < 5):
             self.X_Vol += 1
-        elif self.Movement_Input[1] == True:
+        elif (self.Movement_Input[0] == False) and (self.OnGround == True) and (self.X_Vol > 0):
+            if (self.OnType == "Static:Ice") or (self.OnType == "Dynamic:Ice"):
+                pass
+            else:
+                self.X_Vol = 0
+        elif (self.Movement_Input[1] == True) and (self.OnGround == True) and (self.X_Vol > -5):
             self.X_Vol -= 1
         else:
             self.X_Vol = 0
         self.X_Pos += self.X_Vol
+        if (self.OnGround == True) and (self.Movement_Input[2] == True):
+            if (self.OnType == "Static:Ice") or (self.OnType == "Dynamic:Ice"):
+                self.Y_Vol = -1
+            else:
+                self.Y_Vol = -2
+        if (self.OnGround == False) and (self.X_Vol <= 0):
+            self.Y_Vol += .5
+        self.Y_Pos += self.Y_Vol
+        print(f"The player is at {self.X_Pos} and {self.Y_Pos} and is moving {self.Y_Vol} per loop")
+    
+    def Colision(self, Type, X, Y):
+        if (X < self.X_Pos < X + 80) and ( Y < self.Y_Pos < Y + 30):
+            self.PlatformColide = True
+            self.OnGround = True
+        else:
+            self.PlatformColide = False
+            self.OnGround = False
+        if self.PlatformColide == True:
+            self.OnType = Type
+        else:
+            self.OnType = None
+
+    def Draw(self):
+        pygame.draw.rect(Game_Screen, (180, 100, 200), (self.X_Pos, self.Y_Pos, 32, 32))
+
+player1 = Player()
 
 class Platform():
     def __init__(self, X_Pos=0, Y_Pos=0, Type=None):
@@ -47,6 +79,14 @@ class Platform():
 
     def Move(self):
         pass
+
+    def ReturnHitBox(self, XorY):
+        if XorY == "X":
+            return self.X_Pos
+        elif XorY == "Y":
+            return self.Y_Pos
+        else:
+            print("Error in ReturnHitBox function")
 
     def Draw(self):
         pygame.draw.rect(Game_Screen, (100, 50, 100), (self.X_Pos, self.Y_Pos, 80, 30))
@@ -72,6 +112,9 @@ class Moving_Platform(Platform):
             else:
                 self.X_Pos += .1
 
+    def ReturnHitBox(self, XorY):
+        return super().ReturnHitBox(XorY)
+
     def Draw(self):
         return super().Draw()
 
@@ -91,6 +134,9 @@ class Ice(Moving_Platform):
             pass
         else:
             print(self.Type)
+
+    def ReturnHitBox(self, XorY):
+        return super().ReturnHitBox(XorY)
 
     def Draw(self):
         return super().Draw()
@@ -112,6 +158,9 @@ class Trampoline(Moving_Platform):
         else:
             print(self.Type)
 
+    def ReturnHitBox(self, XorY):
+        return super().ReturnHitBox(XorY)
+    
     def Draw(self):
         return super().Draw()
 
@@ -123,6 +172,7 @@ class Breakable(Moving_Platform):
         self.Start_X = self.X_Pos
         self.Start_Y = self.Y_Pos
         self.Direction = 1
+        self.Living = True
 
     def Move(self):
         if self.Type == "Dynamic:Breakable":
@@ -131,6 +181,9 @@ class Breakable(Moving_Platform):
             pass
         else:
             print(self.Type)
+
+    def ReturnHitBox(self, XorY):
+        return super().ReturnHitBox(XorY)
 
     def Draw(self):
         return super().Draw()
@@ -148,32 +201,42 @@ class Split(Platform):
         else:
             print(self.Type)
 
+    def ReturnHitBox(self, XorY):
+        return super().ReturnHitBox(XorY)
+    
     def Draw(self):
         pygame.draw.rect(Game_Screen, (100, 50, 100), (self.X_Pos, self.Y_Pos, 80, 30))
         pygame.draw.rect(Game_Screen, (100, 50, 100), (self.X_Pos + self.Space_Between, self.Y_Pos, 80, 30))
 
 
-Platforms = []
+PlatformType = ["Simple", "Ice", "Trampoline", "Breakable", "Split"]
 
-for i in range(3, 5):
+Platforms = []
+Platforms.append(Platform(360, 600, "Static:Simple"))
+for i in range(random.randrange(3, 5)):
     Platforms.append(Platform(random.randrange(50, 700), random.randrange(50, 700), "Static:Simple"))
-for i in range(1, 3):
-    Platforms.append(Moving_Platform(random.randrange(50, 700), random.randrange(50, 500), "Dynamic:Simple"))
+for i in range(random.randrange(1, 3)):
+    Platforms.append(Moving_Platform(random.randrange(50, 500), random.randrange(50, 700), "Dynamic:Simple"))
 
 while Running == True:
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             Running = False
+        player1.Input(pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP)
     
     for i in Platforms:
         i.Move()
-    
+        player1.Colision(i.Type, i.ReturnHitBox("X"), i.ReturnHitBox("Y"))
+
+    player1.Physics()
     
     Game_Screen.fill((0, 0, 0))
     
     for i in Platforms:
         i.Draw()
+
+    player1.Draw()
 
     pygame.display.flip()
 
