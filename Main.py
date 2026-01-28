@@ -49,22 +49,27 @@ class Player():
                 self.Y_Vol = -1
             else:
                 self.Y_Vol = -2
-        if (self.OnGround == False) and (self.X_Vol <= 0):
-            self.Y_Vol += .5
+        if (self.OnGround == False) and (self.Y_Vol < 5):
+            self.Y_Vol += .2
         self.Y_Pos += self.Y_Vol
-        print(f"The player is at {self.X_Pos} and {self.Y_Pos} and is moving {self.Y_Vol} per loop")
+        print(f"The player is at {self.X_Pos} and {self.Y_Pos} and is moving {self.Y_Vol} per loop\n"
+              f"The player is coliding with a platform {self.PlatformColide}")
     
-    def Colision(self, Type, X, Y):
-        if (X < self.X_Pos < X + 80) and ( Y < self.Y_Pos < Y + 30):
-            self.PlatformColide = True
-            self.OnGround = True
-        else:
-            self.PlatformColide = False
-            self.OnGround = False
-        if self.PlatformColide == True:
-            self.OnType = Type
-        else:
-            self.OnType = None
+    def Colision(self, Type, Position):
+        try:
+            if (Position[0] < self.X_Pos < Position[0] + Position[2]) and ( Position[1] <= self.Y_Pos < Position[1] + Position[3]):
+                self.PlatformColide = True
+                self.OnGround = True
+                self.Y_Pos = Position[1]
+            else:
+                self.PlatformColide = False
+                self.OnGround = False
+            if self.PlatformColide == True:
+                self.OnType = Type
+            else:
+                self.OnType = None
+        except:
+            print(Position)
 
     def Draw(self):
         pygame.draw.rect(Game_Screen, (180, 100, 200), (self.X_Pos, self.Y_Pos, 32, 32))
@@ -72,29 +77,31 @@ class Player():
 player1 = Player()
 
 class Platform():
-    def __init__(self, X_Pos=0, Y_Pos=0, Type=None):
+    def __init__(self, X_Pos=0, Y_Pos=0, Width=80, Height=30, Type=None):
         self.X_Pos = X_Pos
         self.Y_Pos = Y_Pos
+        self.Width = Width
+        self.Height = Height
         self.Type = Type
 
     def Move(self):
         pass
 
-    def ReturnHitBox(self, XorY):
-        if XorY == "X":
-            return self.X_Pos
-        elif XorY == "Y":
-            return self.Y_Pos
-        else:
+    def ReturnHitBox(self):
+        try:
+            return [self.X_Pos, self.Y_Pos, self.Width, self.Height]
+        except:
             print("Error in ReturnHitBox function")
 
     def Draw(self):
-        pygame.draw.rect(Game_Screen, (100, 50, 100), (self.X_Pos, self.Y_Pos, 80, 30))
+        pygame.draw.rect(Game_Screen, (100, 50, 100), (self.X_Pos, self.Y_Pos, self.Width, self.Height))
 
 class Moving_Platform(Platform):
-    def __init__(self, X_Pos=0, Y_Pos=0, Type=None):
+    def __init__(self, X_Pos=0, Y_Pos=0, Width=80, Height=30, Type=None):
         self.X_Pos = X_Pos
         self.Y_Pos = Y_Pos
+        self.Width = Width
+        self.Height = Height
         self.Type = Type
         self.Start_X = self.X_Pos
         self.Start_Y = self.Y_Pos
@@ -105,23 +112,25 @@ class Moving_Platform(Platform):
             if self.X_Pos < self.Start_X:
                 self.Direction *= -1
             else:
-                self.X_Pos -= .1
+                self.X_Pos -= 1
         else:
             if self.X_Pos > self.Start_X +200:
                 self.Direction *= -1
             else:
-                self.X_Pos += .1
+                self.X_Pos += 1
 
-    def ReturnHitBox(self, XorY):
-        return super().ReturnHitBox(XorY)
+    def ReturnHitBox(self):
+        return super().ReturnHitBox()
 
     def Draw(self):
         return super().Draw()
 
 class Ice(Moving_Platform):
-    def __init__(self, X_Pos=0, Y_Pos=0, Type=None):
+    def __init__(self, X_Pos=0, Y_Pos=0, Width=80, Height=30, Type=None):
         self.X_Pos = X_Pos
         self.Y_Pos = Y_Pos
+        self.Width = Width
+        self.Height = Height
         self.Type = Type
         self.Start_X = self.X_Pos
         self.Start_Y = self.Y_Pos
@@ -135,16 +144,18 @@ class Ice(Moving_Platform):
         else:
             print(self.Type)
 
-    def ReturnHitBox(self, XorY):
-        return super().ReturnHitBox(XorY)
+    def ReturnHitBox(self):
+        return super().ReturnHitBox()
 
     def Draw(self):
         return super().Draw()
 
 class Trampoline(Moving_Platform):
-    def __init__(self, X_Pos=0, Y_Pos=0, Type=None):
+    def __init__(self, X_Pos=0, Y_Pos=0, Width=80, Height=30, Type=None):
         self.X_Pos = X_Pos
         self.Y_Pos = Y_Pos
+        self.Width = Width
+        self.Height = Height
         self.Type = Type
         self.Start_X = self.X_Pos
         self.Start_Y = self.Y_Pos
@@ -158,16 +169,18 @@ class Trampoline(Moving_Platform):
         else:
             print(self.Type)
 
-    def ReturnHitBox(self, XorY):
-        return super().ReturnHitBox(XorY)
+    def ReturnHitBox(self):
+        return super().ReturnHitBox()
     
     def Draw(self):
         return super().Draw()
 
 class Breakable(Moving_Platform):
-    def __init__(self, X_Pos=0, Y_Pos=0, Type=None):
+    def __init__(self, X_Pos=0, Y_Pos=0, Width=80, Height=30, Type=None):
         self.X_Pos = X_Pos
         self.Y_Pos = Y_Pos
+        self.Width = Width
+        self.Height = Height
         self.Type = Type
         self.Start_X = self.X_Pos
         self.Start_Y = self.Y_Pos
@@ -182,16 +195,18 @@ class Breakable(Moving_Platform):
         else:
             print(self.Type)
 
-    def ReturnHitBox(self, XorY):
-        return super().ReturnHitBox(XorY)
+    def ReturnHitBox(self):
+        return super().ReturnHitBox()
 
     def Draw(self):
         return super().Draw()
 
 class Split(Platform):
-    def __init__(self, X_Pos=0, Y_Pos=0, Type=None):
+    def __init__(self, X_Pos=0, Y_Pos=0, Width=80, Height=30, Type=None):
         self.X_Pos = X_Pos
         self.Y_Pos = Y_Pos
+        self.Width = Width
+        self.Height = Height
         self.Type = Type
         self.Space_Between = random.randrange(100, 400)
 
@@ -201,8 +216,8 @@ class Split(Platform):
         else:
             print(self.Type)
 
-    def ReturnHitBox(self, XorY):
-        return super().ReturnHitBox(XorY)
+    def ReturnHitBox(self):
+        return super().ReturnHitBox()
     
     def Draw(self):
         pygame.draw.rect(Game_Screen, (100, 50, 100), (self.X_Pos, self.Y_Pos, 80, 30))
@@ -212,11 +227,11 @@ class Split(Platform):
 PlatformType = ["Simple", "Ice", "Trampoline", "Breakable", "Split"]
 
 Platforms = []
-Platforms.append(Platform(360, 600, "Static:Simple"))
+Platforms.append(Platform(360, 700, Type="Static:Simple"))
 for i in range(random.randrange(3, 5)):
-    Platforms.append(Platform(random.randrange(50, 700), random.randrange(50, 700), "Static:Simple"))
+    Platforms.append(Platform(random.randrange(50, 700), random.randrange(50, 700), Type="Static:Simple"))
 for i in range(random.randrange(1, 3)):
-    Platforms.append(Moving_Platform(random.randrange(50, 500), random.randrange(50, 700), "Dynamic:Simple"))
+    Platforms.append(Moving_Platform(random.randrange(50, 500), random.randrange(50, 700), Type="Dynamic:Simple"))
 
 while Running == True:
     Clock.tick(60)
@@ -227,7 +242,7 @@ while Running == True:
     
     for i in Platforms:
         i.Move()
-        player1.Colision(i.Type, i.ReturnHitBox("X"), i.ReturnHitBox("Y"))
+        player1.Colision(i.Type, i.ReturnHitBox())
 
     player1.Physics()
     
