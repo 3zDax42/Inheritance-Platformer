@@ -14,6 +14,9 @@ class Player():
         self.Y_Vol = 0
         self.OnGround = True
         self.Movement_Input = [False, False, False] # Left, Right, Up
+        self.PlatformColide = False
+        self.Width = 32
+        self.Height = 32
     
     def Input(self, Key1, Key2, Key3):
         if event.type == pygame.KEYDOWN:
@@ -32,23 +35,27 @@ class Player():
                 self.Movement_Input[2] = False
 
     def Physics(self):
-        if (self.Movement_Input[0] == True) and (self.OnGround == True) and (self.X_Vol < 5):
+        if (self.Movement_Input[0] == True) and (self.OnGround == True) and (self.X_Vol < 4):
             self.X_Vol += 1
         elif (self.Movement_Input[0] == False) and (self.OnGround == True) and (self.X_Vol > 0):
             if (self.OnType == "Static:Ice") or (self.OnType == "Dynamic:Ice"):
                 pass
             else:
                 self.X_Vol = 0
-        elif (self.Movement_Input[1] == True) and (self.OnGround == True) and (self.X_Vol > -5):
+        elif (self.Movement_Input[1] == True) and (self.OnGround == True) and (self.X_Vol > -4):
             self.X_Vol -= 1
-        else:
-            self.X_Vol = 0
+        elif (self.Movement_Input[1] == False) and (self.OnGround == True) and (self.X_Vol < 0):
+            if (self.OnType == "Static:Ice") or (self.OnType == "Dynamic:Ice"):
+                pass
+            else:
+                self.X_Vol = 0
         self.X_Pos += self.X_Vol
+
         if (self.OnGround == True) and (self.Movement_Input[2] == True):
             if (self.OnType == "Static:Ice") or (self.OnType == "Dynamic:Ice"):
-                self.Y_Vol = -1
+                self.Y_Vol = -4
             else:
-                self.Y_Vol = -2
+                self.Y_Vol = -8
         if (self.OnGround == False) and (self.Y_Vol < 5):
             self.Y_Vol += .2
         self.Y_Pos += self.Y_Vol
@@ -57,10 +64,15 @@ class Player():
     
     def Colision(self, Type, Position):
         try:
-            if (Position[0] < self.X_Pos < Position[0] + Position[2]) and ( Position[1] <= self.Y_Pos < Position[1] + Position[3]):
-                self.PlatformColide = True
-                self.OnGround = True
-                self.Y_Pos = Position[1]
+            if (Position[0] <= self.X_Pos <= Position[0] + Position[2]) or (Position[0] <= self.X_Pos + self.Width <= Position[0] + Position[2]):
+                if (Position[1] <= self.Y_Pos + self.Height <= Position[1] + Position[3]) or (Position[1] <= self.Y_Pos + self.Height <= Position[1] + Position[3]):
+                    self.PlatformColide = True
+                    self.OnGround = True
+                    self.Y_Pos = Position[1] - self.Height
+                    self.Y_Vol = 0
+                else:
+                    self.PlatformColide = False
+                    self.OnGround = False
             else:
                 self.PlatformColide = False
                 self.OnGround = False
@@ -70,14 +82,18 @@ class Player():
                 self.OnType = None
         except:
             print(Position)
+        if self.PlatformColide == True:
+            return 0
+        else:
+            return 1
 
     def Draw(self):
-        pygame.draw.rect(Game_Screen, (180, 100, 200), (self.X_Pos, self.Y_Pos, 32, 32))
+        pygame.draw.rect(Game_Screen, (180, 100, 200), (self.X_Pos, self.Y_Pos, self.Width, self.Height))
 
 player1 = Player()
 
 class Platform():
-    def __init__(self, X_Pos=0, Y_Pos=0, Width=80, Height=30, Type=None):
+    def __init__(self, X_Pos=0, Y_Pos=0, Width=100, Height=24, Type=None):
         self.X_Pos = X_Pos
         self.Y_Pos = Y_Pos
         self.Width = Width
@@ -97,7 +113,7 @@ class Platform():
         pygame.draw.rect(Game_Screen, (100, 50, 100), (self.X_Pos, self.Y_Pos, self.Width, self.Height))
 
 class Moving_Platform(Platform):
-    def __init__(self, X_Pos=0, Y_Pos=0, Width=80, Height=30, Type=None):
+    def __init__(self, X_Pos=0, Y_Pos=0, Width=100, Height=24, Type=None):
         self.X_Pos = X_Pos
         self.Y_Pos = Y_Pos
         self.Width = Width
@@ -242,7 +258,10 @@ while Running == True:
     
     for i in Platforms:
         i.Move()
-        player1.Colision(i.Type, i.ReturnHitBox())
+    for i in Platforms:
+        PlatformColide = player1.Colision(i.Type, i.ReturnHitBox())
+        if PlatformColide == 0:
+            break
 
     player1.Physics()
     
