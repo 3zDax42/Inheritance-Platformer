@@ -101,7 +101,7 @@ class Platform():
         self.Type = Type
 
     def Move(self):
-        pass
+        self.Y_Pos += .2
 
     def ReturnHitBox(self):
         try:
@@ -124,6 +124,7 @@ class Moving_Platform(Platform):
         self.Direction = 1
     
     def Move(self):
+        self.Y_Pos += .2
         if self.Direction == 1:
             if self.X_Pos < self.Start_X:
                 self.Direction *= -1
@@ -156,7 +157,7 @@ class Ice(Moving_Platform):
         if self.Type == "Dynamic:Ice":
             return super().Move()
         elif self.Type == "Static:Ice":
-            pass
+            self.Y_Pos += .2
         else:
             print(self.Type)
 
@@ -181,7 +182,7 @@ class Trampoline(Moving_Platform):
         if self.Type == "Dynamic:Trampoline":
             return super().Move()
         elif self.Type == "Static:Trampoline":
-            pass
+            self.Y_Pos += .2
         else:
             print(self.Type)
 
@@ -207,7 +208,7 @@ class Breakable(Moving_Platform):
         if self.Type == "Dynamic:Breakable":
             return super().Move()
         elif self.Type == "Static:Breakable":
-            pass
+            self.Y_Pos += .2
         else:
             print(self.Type)
 
@@ -228,7 +229,7 @@ class Split(Platform):
 
     def Move(self):
         if self.Type == "Static:Spit":
-            return super().Move()
+            self.Y_Pos += .2
         else:
             print(self.Type)
 
@@ -241,13 +242,20 @@ class Split(Platform):
 
 
 PlatformType = ["Simple", "Ice", "Trampoline", "Breakable", "Split"]
-
+MotionType = ["Static", "Dynamic"]
 Platforms = []
 Platforms.append(Platform(360, 700, Type="Static:Simple"))
-for i in range(random.randrange(3, 5)):
-    Platforms.append(Platform(random.randrange(50, 700), random.randrange(50, 700), Type="Static:Simple"))
-for i in range(random.randrange(1, 3)):
-    Platforms.append(Moving_Platform(random.randrange(50, 500), random.randrange(50, 700), Type="Dynamic:Simple"))
+print(random.choice(PlatformType))
+for i in range(6):
+    PlatformTYPE = random.choice(PlatformType)
+    if PlatformTYPE == "Split":
+        MotionTYPE = "Static"
+    else:
+        MotionTYPE = random.choice(MotionType)
+    print(f"The motion type is{MotionTYPE} and the platform type is{PlatformTYPE}")
+    TYPE = MotionTYPE + ":" + PlatformTYPE
+    Platforms.append(Platform(random.randrange(20, 580), 600 - i * 100 + random.randrange(-50, 50), Type=TYPE))
+
 
 while Running == True:
     Clock.tick(60)
@@ -258,6 +266,11 @@ while Running == True:
     
     for i in Platforms:
         i.Move()
+    i = 0
+    for i in range(len(Platforms)):
+        if Platforms[i].Y_Pos > 820:
+            Platforms.pop(i)
+            break
     for i in Platforms:
         PlatformColide = player1.Colision(i.Type, i.ReturnHitBox())
         if PlatformColide == 0:
