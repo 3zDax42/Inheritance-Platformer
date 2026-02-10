@@ -93,12 +93,13 @@ class Player():
 player1 = Player()
 
 class Platform():
-    def __init__(self, X_Pos=0, Y_Pos=0, Width=100, Height=24, Type=None):
+    def __init__(self, X_Pos=0, Y_Pos=0, Width=72, Height=12, Type=None):
         self.X_Pos = X_Pos
         self.Y_Pos = Y_Pos
         self.Width = Width
         self.Height = Height
         self.Type = Type
+        self.Img = pygame.image.load('Simple Platform.png').convert_alpha()
 
     def Move(self):
         self.Y_Pos += .2
@@ -110,10 +111,10 @@ class Platform():
             print("Error in ReturnHitBox function")
 
     def Draw(self):
-        pygame.draw.rect(Game_Screen, (100, 50, 100), (self.X_Pos, self.Y_Pos, self.Width, self.Height))
+        Game_Screen.blit(self.Img, (self.X_Pos, self.Y_Pos), (0, 0, self.Width, self.Height))
 
 class Moving_Platform(Platform):
-    def __init__(self, X_Pos=0, Y_Pos=0, Width=100, Height=24, Type=None):
+    def __init__(self, X_Pos=0, Y_Pos=0, Width=72, Height=12, Type=None):
         self.X_Pos = X_Pos
         self.Y_Pos = Y_Pos
         self.Width = Width
@@ -143,7 +144,7 @@ class Moving_Platform(Platform):
         return super().Draw()
 
 class Ice(Moving_Platform):
-    def __init__(self, X_Pos=0, Y_Pos=0, Width=80, Height=30, Type=None):
+    def __init__(self, X_Pos=0, Y_Pos=0, Width=72, Height=12, Type=None):
         self.X_Pos = X_Pos
         self.Y_Pos = Y_Pos
         self.Width = Width
@@ -168,7 +169,7 @@ class Ice(Moving_Platform):
         return super().Draw()
 
 class Trampoline(Moving_Platform):
-    def __init__(self, X_Pos=0, Y_Pos=0, Width=80, Height=30, Type=None):
+    def __init__(self, X_Pos=0, Y_Pos=0, Width=72, Height=12, Type=None):
         self.X_Pos = X_Pos
         self.Y_Pos = Y_Pos
         self.Width = Width
@@ -193,7 +194,7 @@ class Trampoline(Moving_Platform):
         return super().Draw()
 
 class Breakable(Moving_Platform):
-    def __init__(self, X_Pos=0, Y_Pos=0, Width=80, Height=30, Type=None):
+    def __init__(self, X_Pos=0, Y_Pos=0, Width=72, Height=12, Type=None):
         self.X_Pos = X_Pos
         self.Y_Pos = Y_Pos
         self.Width = Width
@@ -219,7 +220,7 @@ class Breakable(Moving_Platform):
         return super().Draw()
 
 class Split(Platform):
-    def __init__(self, X_Pos=0, Y_Pos=0, Width=80, Height=30, Type=None):
+    def __init__(self, X_Pos=0, Y_Pos=0, Width=72, Height=12, Type=None):
         self.X_Pos = X_Pos
         self.Y_Pos = Y_Pos
         self.Width = Width
